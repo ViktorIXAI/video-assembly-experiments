@@ -2,6 +2,29 @@
 
 A separate line of work from the inference-engine benches. This repository records how a finished clip is built on one local GPU: scene renders, timing, assembly, and a second cut that removes reference-image jumps. Music and video files are not published. The song has no publication rights here, and the rendered video is too large for this repo. Weights stay on the machine that rendered them.
 
+## Standing rule
+
+Every experiment on this line is published here as technical notes and logs: how the clip was assembled, exact model names, authors, byte sizes, and the split between decisions the owner made and work that ran without them. Video files and the song are not uploaded. The song has no publication rights in this repo. The rendered video is too large. Host addresses and account paths stay out.
+
+## Who did what, neon-water-001
+
+Measured card time is the machine. Owner decisions are the brief, the scene list, the song file (268.4 s, not published), and later orders: phone links, a report every 3 minutes, a second cut that removes reference jumps, and this public note. After the order to finish without further approval, no approval was requested. Time the owner spent waiting on a question was not logged from the start of the run, so it is not stated as a number.
+
+Card time that was written down, this piece only:
+
+- Scene 1, sampling about 22 minutes, file at 22:04:26, served at 22:12:04
+- Scene 2, 19.4 minutes, done 22:37:23
+- Scene 3, 21.4 minutes, done 22:58:48
+- Scene 4, 15.6 minutes, done 23:14:25
+- Scene 5 started 23:14:25 and was still on the card when this note was pushed
+
+## Models and authors
+
+- MiniMax H3, MiniMax. Pack used: `Comfy-Org/MiniMax-H3`, file `minimax_h3_fl2va_pruned_int8_convrot.safetensors`, 20970379616 bytes. Video VAE `minimax_h3_video_vae_int8_convrot.safetensors`, 2811065184 bytes. Audio VAE `minimax_h3_audio_vae_fp32.safetensors`, 605254808 bytes.
+- Text encoder file `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors`, 15687142551 bytes, same Comfy-Org pack. The base text model is Qwen3-VL 32B, packed for this H3 workflow by Comfy-Org.
+- pi-H3 adapters, published by Lakonik. Repos: `Lakonik/pi-H3` and nodes `Lakonik/ComfyUI-piFlow` at git `e0ca46f`. Files: `pi_h3_2step_dwd_adapter_int8_convrot.safetensors` and `pi_h3_4step_dwd_adapter_int8_convrot.safetensors`, 2192176240 bytes each. The 4-step file is the one used for the scenes.
+- ComfyUI 0.46.0, Comfy Org. PyTorch 2.14.1+cu130.
+
 ## Name
 
 Line: **video-assembly-experiments**.
