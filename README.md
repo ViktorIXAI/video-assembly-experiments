@@ -76,11 +76,7 @@ Unchanged while the scenes render. When all 22 files exist, they are concatenate
 
 ## Assembly, version 2
 
-Starts only after `final_clip.mp4` exists. It does not stop the renderer and does not rewrite scene files.
-
-Some scenes open on a reference portrait, then jump to the real shot in the first 0.5–2.0 seconds. Version 1 keeps that jump. Version 2 looks at the first 2.0 seconds, frame by frame (gray 96×44, mean absolute difference). If the sharpest jump in 0.08–2.0 s is both above 25 and above 3.5 times the median difference in that window, the start is cut at the first frame after the jump, and never by more than 2.0 seconds. If there is no such jump, the scene is copied unchanged.
-
-The cut piece is stretched back to the original duration with `setpts`, still at 24 fps, so the song stays on the same seconds. The 22 processed copies are concatenated and the same song is mixed. Output name: `final_clip_v2.mp4`. A per-scene line records seconds cut, frames cut, and the stretch factor. That table is written when version 2 finishes. It is not in this note yet.
+Version 2 starts only after `final_clip.mp4` exists. It does not stop the renderer and does not rewrite scene files. Each scene is checked at both ends, at most 2.0 seconds each. A cut fires only when the picture is held, then jumps: the frame is compared with a frame just outside that 2-second window, and the largest one-frame change must be at least 12 with the two sides at least 18 apart. A smooth camera move, such as the opening glide, does not qualify. The start is cut at the first clean frame after that jump. The end is cut at the last clean frame before it. The clean middle is stretched back to the original duration with `setpts` at 24 fps, so the song stays on the same seconds. The log line for each scene records seconds and frames cut at the start, seconds and frames cut at the end, and the stretch factor. On the finished scenes measured before this note, scene 1 was left whole, scene 2 lost 1.792 s at the start, scene 4 lost 0.417 s at the start, and scene 5 lost 1.442 s at the end.
 
 ## What is not here
 
