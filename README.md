@@ -1,0 +1,67 @@
+# Video assembly experiments
+
+A separate line of work from the inference-engine benches. This repository records how a finished clip is built on one local GPU: scene renders, timing, assembly, and a second cut that removes reference-image jumps. Music and video files are not published. The song has no publication rights here, and the rendered video is too large for this repo. Weights stay on the machine that rendered them.
+
+## Name
+
+Line: **video-assembly-experiments**.
+
+First run: **neon-water-001**, working title "Neon Over the Water". A 22-scene music video, about 4 minutes 10 seconds, generated locally and assembled in order. The song is mixed on at the end. It is not in this repository.
+
+## Machine
+
+One RTX 5090 Laptop, 24463 MiB, firmware power cap 175 W, about 64 GB RAM, Ubuntu 24.04. Driver 615.71.09, CUDA user-mode 13.4. The card also hosts the house inference brain. For this run the brain process was parked so the card could hold the video model. That is a scheduling fact, not part of the picture.
+
+## Stack that actually ran
+
+- ComfyUI 0.46.0
+- ComfyUI-piFlow, git `e0ca46f` (pi-H3 nodes; the extension asks for ComfyUI 0.45 or newer)
+- PyTorch 2.14.1+cu130, CUDA 13.0
+- Base weights: MiniMax H3 FL2VA, pruned INT8 ConvRot, 20970379616 bytes
+- Adapters: pi-H3 2-step DWD and 4-step DWD, INT8 ConvRot, 2192176240 bytes each
+- Text encoder: Qwen3-VL 32B NVFP4 AWQ, 15687142551 bytes
+- VAEs: video INT8 ConvRot and audio FP32
+
+Public download URLs are the Hugging Face files named in the pi-H3 workflow notes. A download that omits the directory prefix (`diffusion_models/`, `text_encoders/`, `vae/`) returns 404.
+
+## Graph that returned a file
+
+`UNETLoader` → 4-step DWD adapter → `MiniMaxH3SigmaShift` (12 / 3) → `MiniMaxH3ImageToVideo` → euler + pi-Flow scheduler (4 steps, `max_raw_t` 0.96, `final_step_size_scale` 0.6) → `DWD Decode` → `CreateVideo` at 24 fps → `SaveVideo`.
+
+Width and height are multiples of 32. This run uses 1696×768. Length is frames at 24 fps on the `17k+5` grid, capped at 362 (the published trained range is about 124–362). A 16-second ask therefore becomes 362 frames, 15.083 seconds, not 16.
+
+`SaveVideo` puts the mp4 in the history under `outputs.images` with `metadata.kind == video`. Treating a missing `videos` key as failure throws away a finished render. That happened on scene 1. The file was already on disk. It was copied into the served project directory at 22:12:04 local. The render itself finished at 22:04:26.
+
+Character stills are 5-frame portrait clips, frame 1 saved as PNG, then passed as `first_frame` (and `last_frame` when both people are in the scene). Those inputs are optional. Scene 1 had no person and no reference.
+
+## Timing, local time, 2026-11-22
+
+Scene 1 is the establishing shot. Sampling took about 22 minutes. File written 22:04:26. Served 22:12:04.
+
+The batch of scenes 2–22 started at 22:17:57. Measured walls, this piece only, not the whole clip:
+
+- Scene 2, done 22:37:23, 19.4 minutes, 328 frames
+- Scene 3, done 22:58:48, 21.4 minutes, 345 frames
+- Scene 4, done 23:14:25, 15.6 minutes, 294 frames
+- Scene 5 started 23:14:25, 362 frames, still running when this note was written
+
+At about 20 minutes a scene, 22 scenes are on the order of 7 hours of card time after the model is warm. That is a count of pieces, not a promise.
+
+## Assembly, version 1
+
+Unchanged while the scenes render. When all 22 files exist, they are concatenated in order to H.264, 24 fps, yuv420p, no neural audio, then the song is mixed as AAC 320k with `-shortest`. Output name: `final_clip.mp4`. Original scene files are not deleted.
+
+## Assembly, version 2
+
+Starts only after `final_clip.mp4` exists. It does not stop the renderer and does not rewrite scene files.
+
+Some scenes open on a reference portrait, then jump to the real shot in the first 0.5–2.0 seconds. Version 1 keeps that jump. Version 2 looks at the first 2.0 seconds, frame by frame (gray 96×44, mean absolute difference). If the sharpest jump in 0.08–2.0 s is both above 25 and above 3.5 times the median difference in that window, the start is cut at the first frame after the jump, and never by more than 2.0 seconds. If there is no such jump, the scene is copied unchanged.
+
+The cut piece is stretched back to the original duration with `setpts`, still at 24 fps, so the song stays on the same seconds. The 22 processed copies are concatenated and the same song is mixed. Output name: `final_clip_v2.mp4`. A per-scene line records seconds cut, frames cut, and the stretch factor. That table is written when version 2 finishes. It is not in this note yet.
+
+## What is not here
+
+- The song
+- The rendered scenes and the finished clips
+- Model weights
+- Host addresses, account paths, and API keys
