@@ -110,3 +110,28 @@ Microsoft neural voices through edge-tts, not a local speech model:
 Same stack as neon-water-001: MiniMax H3 INT8 ConvRot, pi-H3 4-step DWD adapter, ComfyUI 0.46.0, 1696x768, 24 fps, 4 steps. No reference stills from the previous clip. The picture pass finished at 08:20:57 local, 34.8 minutes for the six pieces. A raw voiced roll was written at 08:21:15. Lip-sync, corner cards, and the music bed are not in that file. The full timed log is in `RUNLOG.md`.
 
 Lip-sync is planned with LatentSync 1.6, ByteDance, after the picture model releases the card. The background bed is synthesized for this roll, not a published song.
+
+## hybrid-lipsync-001
+
+The day roll (hybrid-ai-001) failed the one thing that mattered: the mouth moved on its own because the picture was rendered without any audio conditioning, and the voice was muxed afterwards. A later check confirmed lip-sync was never attempted on that roll. This line rebuilds the same topic so the mouth is driven by the spoken line itself.
+
+### Method
+
+- Seven lines, English, Microsoft neural voices through edge-tts. Lengths in ms: 5472, 3936, 3528, 3216, 3336, 3024, 3024. Total spoken time 25.5 s.
+- Seven picture pieces, same stack as neon-water-001 (MiniMax H3 INT8 ConvRot, pi-H3 4-step adapter, 1696x768, 4 steps). New rule in the prompt: face straight to camera, both eyes visible, mouth closed and still, no hands near the face, no head turn, no camera move. The generator supplies a calm talking-ready face; the mouth comes from the audio, not from the picture model.
+- Mouth movement: LatentSync 1.6, ByteDance, checkpoint `latentsync_unet.pt` (5 072 222 488 bytes) plus `whisper/tiny.pt`. Audio drives the mouth through a whisper audio encoder, so text, sound, and lip movement share one clock.
+- Source clips are re-timed to 25 fps because that is what the LatentSync config assumes, then synced one scene at a time, then joined.
+
+### Timings
+
+Picture pass 09:15:00 to 09:45:58, 31.0 minutes for seven pieces (6.7, 4.7, 3.9, 3.9, 3.9, 3.1, 4.7 min). Checkpoints downloaded 09:14. The lip-sync pass started 10:17:53.
+
+### Incident during this line
+
+The first lip-sync run died on CUDA out of memory at 09:47. The runner tried to stop the picture server with a pattern that matched the wrong command line, so the server kept 16.2 GiB of VRAM while the sync model tried to load. The pattern now matches the real process arguments, and the runner waits until `nvidia-smi` reports no compute process before starting the sync. That is the whole fix.
+
+### What is not in this repo
+
+- The rendered pieces and the final clip
+- The spoken voice files
+- Model weights

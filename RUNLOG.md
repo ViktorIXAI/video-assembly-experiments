@@ -102,3 +102,12 @@ Lip-sync was planned with LatentSync 1.6, ByteDance. The checkpoint download did
 - The spoken voice files from the day roll
 - Model weights
 - Host addresses, account paths, and keys
+
+## hybrid-lipsync-001, order of work
+
+1. The owner rejected the day roll: the lips did not match the words. Cause: the picture model never saw the audio; the voice was muxed on top afterwards.
+2. Rewrote the brief for this line: seven short lines, one speaker per scene, face straight to camera, mouth closed in the generated picture, calm face, no head turns. The picture model only supplies the body; LatentSync 1.6 moves the mouth from the speech audio.
+3. Generated the seven lines at 09:12 to 09:16 with edge-tts. Downloaded the LatentSync 1.6 checkpoints (unet 5 072 222 488 bytes, whisper tiny) by 09:14.
+4. Rendered seven picture pieces 09:15:00 to 09:45:58, 31.0 minutes total. Frame counts 192, 158, 141, 141, 141, 124, 158 at 24 fps.
+5. First sync attempt failed at 09:47 with CUDA out of memory. The cleanup step used a process-match string that did not appear in the picture server's command line, so the server was never stopped and kept 16.2 GiB of VRAM. The sync model peaked at 7.2 GiB and failed.
+6. Fixed the match string, added a VRAM drain loop that waits for an empty compute list, and added the expandable-segments allocator option. Restarted at 10:17:39. Scene 1 sync started 10:17:53.
