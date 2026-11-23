@@ -107,6 +107,6 @@ Microsoft neural voices through edge-tts, not a local speech model:
 
 ### Picture
 
-Same stack as neon-water-001: MiniMax H3 INT8 ConvRot, pi-H3 4-step DWD adapter, ComfyUI 0.46.0, 1696x768, 24 fps, 4 steps. No reference stills from the previous clip. Each scene is the spoken length plus about 2 seconds, snapped up to the 17k+5 frame grid. Scene 1 sampling started 07:46:03 local and was still on the card when this note was written.
+Same stack as neon-water-001: MiniMax H3 INT8 ConvRot, pi-H3 4-step DWD adapter, ComfyUI 0.46.0, 1696x768, 24 fps, 4 steps. No reference stills from the previous clip. The picture pass finished at 08:20:57 local, 34.8 minutes for the six pieces. A raw voiced roll was written at 08:21:15. Lip-sync, corner cards, and the music bed are not in that file. The full timed log is in `RUNLOG.md`.
 
 Lip-sync is planned with LatentSync 1.6, ByteDance, after the picture model releases the card. The background bed is synthesized for this roll, not a published song.
