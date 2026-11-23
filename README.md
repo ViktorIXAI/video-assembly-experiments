@@ -84,3 +84,29 @@ Version 2 starts only after `final_clip.mp4` exists. It does not stop the render
 - The rendered scenes and the finished clips
 - Model weights
 - Host addresses, account paths, and API keys
+
+
+## hybrid-ai-001
+
+A spoken 30-second piece, working title "the future is hybrid AI". Six short talking scenes, new people, not the characters from neon-water-001. Picture files and voice files are not in this repo.
+
+### Who did what
+
+On 2026-11-23 at 07:38 local, the owner gave the brief to another agent. That agent wrote the prompt from the owner's public post and from the owner's own words. Writing the prompt took 2 to 3 minutes. The owner then handed the whole job to this agent and said not to ask again. Owner time on the brief is those 2–3 minutes plus the handoff. Voice choice, frame lengths, the render, lip-sync, overlays, and the music bed are machine decisions after that handoff.
+
+### Voices
+
+Microsoft neural voices through edge-tts, not a local speech model:
+
+- Scene 1, en-US-AriaNeural, 4752 ms
+- Scene 2, en-US-AndrewNeural, 6144 ms
+- Scene 3, en-US-EmmaNeural, 4200 ms
+- Scene 4, same Andrew voice at +12% rate, 2952 ms
+- Scene 5, en-US-AriaNeural, 6168 ms
+- Scene 6, en-US-BrianNeural, 4608 ms
+
+### Picture
+
+Same stack as neon-water-001: MiniMax H3 INT8 ConvRot, pi-H3 4-step DWD adapter, ComfyUI 0.46.0, 1696x768, 24 fps, 4 steps. No reference stills from the previous clip. Each scene is the spoken length plus about 2 seconds, snapped up to the 17k+5 frame grid. Scene 1 sampling started 07:46:03 local and was still on the card when this note was written.
+
+Lip-sync is planned with LatentSync 1.6, ByteDance, after the picture model releases the card. The background bed is synthesized for this roll, not a published song.
