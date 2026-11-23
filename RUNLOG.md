@@ -111,3 +111,11 @@ Lip-sync was planned with LatentSync 1.6, ByteDance. The checkpoint download did
 4. Rendered seven picture pieces 09:15:00 to 09:45:58, 31.0 minutes total. Frame counts 192, 158, 141, 141, 141, 124, 158 at 24 fps.
 5. First sync attempt failed at 09:47 with CUDA out of memory. The cleanup step used a process-match string that did not appear in the picture server's command line, so the server was never stopped and kept 16.2 GiB of VRAM. The sync model peaked at 7.2 GiB and failed.
 6. Fixed the match string, added a VRAM drain loop that waits for an empty compute list, and added the expandable-segments allocator option. Restarted at 10:17:39. Scene 1 sync started 10:17:53.
+
+## hybrid-s2v-001, order of work
+
+1. 11:05 Owner verdict on hybrid-lipsync-001: lips move, but not on the words. Reject the whole post-hoc patching approach.
+2. Checks: piFlow node pack has no audio conditioning input (grep of node classes, 11:22). LatentSync 1.6 eval script imports a removed scenedetect API and cannot run (11:24). Decision recorded without a SyncNet number.
+3. Chose Wan2.2-S2V-14B: audio-driven generation, single 16.4 GB fp8 file, ComfyUI-native node `WanSoundImageToVideo`, audio bound to latent groups through sliding windows in the model itself.
+4. Downloaded the four model files 11:25 onward (VAE, wav2vec2 audio encoder, umT5 fp8, S2V fp8 denoiser). Prepared seven reference crops and reused the seven 16 kHz line wavs.
+5. Runner waits for the model set, flattens the download paths, starts the picture server, renders shortest line first as the smoke test, then the rest, muxes each line under its scene, joins, serves.

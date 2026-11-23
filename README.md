@@ -135,3 +135,15 @@ The first lip-sync run died on CUDA out of memory at 09:47. The runner tried to 
 - The rendered pieces and the final clip
 - The spoken voice files
 - Model weights
+
+## hybrid-s2v-001
+
+Owner review of hybrid-lipsync-001: rejected. A frame-by-frame check showed mouth motion that does not follow the words, and the owner called the result unusable. Conclusion of this line: post-hoc mouth patching is the wrong architecture for this task. The mouth has to be built inside the video model, conditioned on the speech audio, at generation time.
+
+What was checked before switching:
+- Our picture stack (MiniMax H3 INT8 ConvRot plus the pi-H3 node pack) has no audio conditioning path. The pack ships an audio VAE file, but the open node pack exposes no audio input, so this model cannot speak a given line.
+- LatentSync's own SyncNet scoring tool does not run against the 1.6 code (it imports a removed scenedetect API), so that line has no official score from us. The rejection stands on the frame checks.
+
+New architecture: Wan2.2-S2V-14B (Wan-S2V paper, Alibaba, Apache 2.0). One model, three inputs: a reference photo of the person, the exact speech audio, and a text description. The model generates the video at the audio's own clock: 4-frame latent groups are bound to sliding audio windows, so lip motion is sampled against the waveform milliseconds, not fitted afterwards. ComfyUI 0.46 carries this natively as the `WanSoundImageToVideo` node.
+
+Fit on our card: RTX 5090 Laptop 24 GB. The fp8_scaled denoiser is 16.4 GB; the text encoder umT5 fp8 adds 6.7 GB (offloaded between stages), wav2vec2-large English audio encoder 1.3 GB, Wan 2.1 VAE 0.25 GB. Generation at 832x480, 16 fps, 20 steps, Euler/simple, shift 3.0, CFG 3.5. Reference photos are 832x480 crops of the first frames of the previous scenes, so the seven people stay the same. The seven lines and lengths are reused unchanged from hybrid-lipsync-001. The voice is muxed back under the generated picture; the model is conditioned on that same audio, so the mux is exact, not an alignment guess.
