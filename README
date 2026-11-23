@@ -1,0 +1,22 @@
+
+## hybrid-h3-voice-001: the model already speaks (2026-11-23)
+
+Correction to hybrid-s2v-001: the claim "the H3 adapter has no audio path" was
+true only of the plugin version installed that morning. The piFlow repo
+(Lakonik/ComfyUI-piFlow) was since re-cloned current, and the official
+`pi-H3-DWD.json` workflow decodes audio from the same latent:
+`VAEDecodeAudio` + `minimax_h3_audio_vae_fp32.safetensors` feed `CreateVideo(images, audio)`.
+MiniMax H3 (released 2026-07-31, weights opened 2026-08-03) jointly predicts
+video and 32 kHz stereo latents; dialogue is conditioned by prompt syntax:
+`She (S1) says: <d>[English] exact words</d>` plus `overall_soundscape:` and
+`non_diegetic_music:` sections. `H3-Base-Ref2VA` additionally accepts reference
+audio clips. By contrast Wan2.2-S2V (Alibaba) shipped 2025-08-26 — a year older.
+
+Timeline of the wrong turn, kept on the record: S2V-14B fp8 downloaded (16.4 GB),
+scene 04 (57 frames) started 11:41, GPU sat at ~80%/23.5 GB for hours — too slow
+to be useful next to the native path. Queue cleared, all raw S2V files kept.
+
+Test spec (`h3_voice_test.py` on P2005): one 125-frame scene at 24 fps, the
+speaker asked to say "Your files never leave your box." with room tone and no
+music; sizes 1696x768 -> 1280x576 -> 1056x480 fallback; 4-step DWD adapter,
+shift_video=12 shift_audio=3 (official values).
